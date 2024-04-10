@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Register from './pages/register';
 import Login from './pages/login';
 import Dashboard from './pages/dashboard';
-import Slide from './pages/slide';
+import Presentation from './pages/presentation';
 
 function App () {
   let lstoken = null;
@@ -22,7 +22,7 @@ function App () {
         <Route path="/register" element={<Register token={token} setTokenfunction={setTokenAbstract}/>} />
         <Route path="/" element={<Login token={token} setTokenfunction={setTokenAbstract}/>} />
         <Route path="/dashboard" element={<Dashboard token={token} setTokenfunction={setTokenAbstract}/>} />
-        <Route path="/presentation/:presentationId" element={<Slide token={token} setTokenfunction={setTokenAbstract}/>} />
+        <Route path="/presentation/:presentationId" element={<Presentation token={token} setTokenfunction={setTokenAbstract}/>} />
       </Routes>
     </BrowserRouter>
 

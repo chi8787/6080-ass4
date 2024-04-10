@@ -11,7 +11,7 @@ function Dashboard ({ token, setTokenfunction }) {
   const [presentations, setPresentations] = useState([]);
 
   if (token === null) {
-    navigate('/login');
+    navigate('/');
   }
 
   useEffect(() => {
@@ -20,9 +20,7 @@ function Dashboard ({ token, setTokenfunction }) {
         Authorization: token,
       }
     }).then(response => {
-      setPresentations(response.data?.store?.presentations || []);
-      console.log('load data:', response);
-      console.log('presentations:', presentations);
+      setPresentations(response.data?.store?.store.presentations || []);
     }).catch(error => {
       alert(error.response.data.error);
     });
@@ -56,7 +54,6 @@ function Dashboard ({ token, setTokenfunction }) {
           slides: [],
         };
         const presentationList = [...fetchPresentations, newPresentation];
-        console.log('presentationList:', presentationList);
         const putDatta = {
           store: {
             presentations: presentationList
