@@ -83,7 +83,7 @@ function Dashboard ({ token, setTokenfunction }) {
   return (
     <>
       <Logout token={token} setToken={setTokenfunction} />
-      <h3>dashboard</h3>
+      <h3>Dashboard</h3>
       <Button variant="contained" color="primary" onClick={newPresentation}>
         New Presentation
       </Button>

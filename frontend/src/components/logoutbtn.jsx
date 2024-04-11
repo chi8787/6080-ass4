@@ -17,7 +17,6 @@ function Logout ({ token, setToken }) {
       navigate('/');
     } catch (error) {
       alert(error.response.data.error);
-      // throw new Error(error.response.data.error);
     }
   }
   return (
