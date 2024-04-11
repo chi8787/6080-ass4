@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Logout from '../components/logoutbtn';
-import { Button, Dialog, DialogContent, DialogActions, TextField, Typography, Box, Grid, Paper, Slider } from '@mui/material';
+import { Button, Dialog, DialogContent, DialogActions, TextField, Typography, Box, Grid, Paper, RadioGroup, FormControlLabel, Radio, Checkbox } from '@mui/material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
@@ -15,10 +15,21 @@ function Presentation ({ token, setTokenfunction }) {
   const [openSlide, setOpenSlide] = useState(false);
   const [slideName, setSlideName] = useState(''); // create new slide
   const [slideIndex, setSlideIndex] = useState(0);
-  const [slideSize, setSlideSize] = useState({ width: 100, height: 100 });
   const [fontSize, setFontSize] = useState('1');
   const [color, setColor] = useState('#000000');
-  const [layerNumber, setLayerNumber] = useState('1');
+  const [openOption, setOpenOption] = useState(false);
+  const [openTextBox, setOpenTextBox] = useState(false);
+  const [openImageBox, setOpenImageBox] = useState(false);
+  const [openVideoBox, setOpenVideoBox] = useState(false);
+  const [openCodeBox, setOpenCodeBox] = useState(false);
+  const [textBoxContent, setTextBoxContent] = useState('');
+  const [textBoxFontSize, setTextBoxFontSize] = useState('1');
+  const [textBoxColor, setTextBoxColor] = useState('#000000');
+  const [textBoxSize, setTextBoxSize] = useState({ width: 50, height: 50 });
+  const [textBoxLayer, setTextBoxLayer] = useState('2');
+  const [contentType, setContentType] = useState('text');
+  const [imageData, setImageData] = useState({ url: '', alt: '', width: 50, height: 50, layer: '2' });
+  const [videoData, setVideoData] = useState({ url: '', width: 100, height: 100, autoplay: false });
 
   if (token === null) {
     navigate('/');
@@ -121,7 +132,6 @@ function Presentation ({ token, setTokenfunction }) {
   const createSlide = () => {
     setOpenSlide(true);
     setSlideName('');
-    setSlideSize({ width: 100, height: 100 });
   };
 
   const cancelSlide = () => {
@@ -141,16 +151,15 @@ function Presentation ({ token, setTokenfunction }) {
       let presentationList = response.data.store.store.presentations;
       const updatedPresentations = presentationList.filter(p => p.id !== presentation.id);
       const existSlide = foundPresentation.slides;
+      const newId = existSlide.length > 0 ? existSlide[existSlide.length - 1].id + 1 : 1;
       if (!presentationList) {
         presentationList = [];
       }
       const newSlide = {
+        id: newId,
         name: slideName,
-        width: slideSize.width,
-        height: slideSize.height,
         fontSize: fontSize,
         color: color,
-        layer: layerNumber,
       };
       foundPresentation = {
         id: foundPresentation.id,
@@ -228,8 +237,93 @@ function Presentation ({ token, setTokenfunction }) {
     navigate('/dashboard');
   };
 
-  const handleSizeChange = (name, value) => {
-    setSlideSize(prev => ({ ...prev, [name]: value }));
+  const createTextArea = async () => {
+    setOpenOption(false);
+    setOpenSlide(false);
+    try {
+      const response = await axios.get('http://localhost:5005/store', {
+        headers: {
+          Authorization: token,
+        }
+      });
+      let presentationList = response.data?.store.store.presentations;
+      let foundPresentation = presentationList.find((p) => p.id === parseInt(presentationId)); // target presentation
+      const updatedPresentations = presentationList.filter(p => p.id !== presentation.id); // filter out the target presentation
+      const existSlide = foundPresentation.slides;
+      const foundSlide = existSlide.find((_, index) => index === slideIndex); // target slide
+      console.log('foundSlide:', foundSlide);
+      const updatedSlide = foundPresentation.slides.filter((_, index) => index !== slideIndex); // filter out the target slide
+      if (!presentationList) {
+        presentationList = [];
+      }
+      const textarea = {
+        name: textBoxContent || 'none',
+        fontSize: textBoxFontSize || 'none',
+        color: textBoxColor || 'none',
+        width: textBoxSize.width,
+        imagewidth: imageData.width || 'none',
+        videoWidth: videoData.width || 'none',
+        height: textBoxSize.height || 'none',
+        imageheight: imageData.height || 'none',
+        videoheight: videoData.height || 'none',
+        imageurl: imageData.url || 'none',
+        alt: imageData.alt || 'none',
+        videourl: videoData.url || 'none',
+        layer: textBoxLayer || 2,
+        autoplay: videoData.autoplay || 'none',
+      };
+      const newSlide = {
+        id: foundSlide.id,
+        name: foundSlide.name,
+        fontSize: foundSlide.fontSize,
+        color: foundSlide.color,
+        textarea: textarea,
+      };
+      foundPresentation = {
+        id: foundPresentation.id,
+        title: foundPresentation.title,
+        slides: [...updatedSlide, newSlide],
+      };
+      const updateList = [...updatedPresentations, foundPresentation];
+      const putData = {
+        store: {
+          presentations: updateList
+        }
+      };
+      await axios.put('http://localhost:5005/store', putData, {
+        headers: {
+          Authorization: token,
+        }
+      });
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error in deletePresentation:', error);
+      alert(error?.response?.data?.error || 'An error occurred');
+    }
+  };
+
+  const handleContentChange = (event) => {
+    setContentType(event.target.value);
+  };
+
+  const addContent = () => {
+    setOpenOption(true);
+    if (contentType === 'text') {
+      setOpenTextBox(true);
+      setImageData({ url: 'none', alt: 'none', width: 'none', height: 'none', layer: '2' });
+      setVideoData({ url: 'none', width: 'none', height: 'none', autoplay: false });
+    } else if (contentType === 'image') {
+      setOpenImageBox(true);
+      setTextBoxSize({ width: 'none', height: 'none' });
+      setVideoData({ url: 'none', width: 'none', height: 'none', autoplay: false });
+    } else if (contentType === 'video') {
+      setOpenVideoBox(true);
+      setTextBoxSize({ width: 'none', height: 'none' });
+      setImageData({ url: 'none', alt: 'none', width: 'none', height: 'none', layer: '2' });
+    } else if (contentType === 'code') {
+      setOpenCodeBox(true);
+      setImageData({ url: 'none', alt: 'none', width: 'none', height: 'none', layer: '2' });
+    }
   };
 
   return (
@@ -246,10 +340,129 @@ function Presentation ({ token, setTokenfunction }) {
             {presentation.slides.map((slide, index) => (
               <Grid
                 item key={index} xs={12}
-                sx={{ position: 'absolute', top: 0, left: 0, width: `${slide.width}%`, height: `${slide.height}%`, display: index === slideIndex ? 'block' : 'none' }}>
-                <Paper elevation={2} sx={{ minHeight: `${slide.height}%`, position: 'relative' }}>
-                  <Typography sx={{ fontSize: `${slide.fontSize}em`, color: slide.color }}>{slide.name || 'Empty slide'}</Typography>
-                  <Box position="absolute" bottom="10px" right="10px">
+                sx={{ position: 'absolute', top: 0, left: 0, width: '100%', display: index === slideIndex ? 'flex' : 'none', flexDirection: 'column' }}>
+                <Paper elevation={2} sx={{ minHeight: '400px', position: 'relative' }}>
+                  <Typography
+                    sx={{
+                      fontSize: `${slide.fontSize}em`,
+                      color: slide.color,
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      m: 1,
+                      zIndex: 1,
+                      maxWidth: '100%',
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                      textOverflow: 'ellipsis'
+                    }}>
+                    {slide.name || 'Empty slide'}
+                  </Typography>
+                  {slide.textarea.name && slide.textarea.videourl === 'none' && (
+                    <Box
+                      sx={{
+                        width: `${slide.textarea.width}%`,
+                        height: `${slide.textarea.height}%`,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        border: '1px solid #e8e8e8',
+                        p: 1,
+                        overflow: 'hidden',
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                        backgroundColor: 'white',
+                        zIndex: slide.textarea.layer,
+                      }}>
+                      <Typography sx={{ fontSize: `${slide.textarea.fontSize}em`, color: slide.textarea.color }}>
+                        {slide.textarea.name || ''}
+                      </Typography>
+                    </Box>
+                  )}
+                  {slide.textarea.name === 'none' && slide.textarea.imageurl && slide.textarea.videourl === 'none' && (
+                    <Box
+                      sx={{
+                        width: `${slide.textarea.imagewidth}%`,
+                        height: `${slide.textarea.imageheight}%`,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        border: '1px solid #e8e8e8',
+                        p: 1,
+                        overflow: 'hidden',
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                        backgroundColor: 'white',
+                        zIndex: slide.textarea.layer,
+                      }}>
+                      <img
+                        src={slide.textarea.imageurl}
+                        alt={slide.textarea.alt || 'image description'}
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: '100%',
+                          objectFit: 'contain'
+                        }}
+                      />
+                    </Box>
+                  )}
+                  {slide.textarea.name === 'none' && slide.textarea.imageurl === 'none' && slide.textarea.videourl && (
+                      <Box
+                        sx={{
+                          width: `${slide.textarea.videoWidth}%`,
+                          height: `${slide.textarea.videoheight}%`,
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          border: '1px solid #e8e8e8',
+                          p: 1,
+                          overflow: 'hidden',
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                          backgroundColor: 'white',
+                          zIndex: slide.textarea.layer,
+                        }}
+                      >
+                        {slide.textarea.videourl.includes('youtube.com') || slide.textarea.videourl.includes('youtu.be')
+                          ? (
+                              <iframe
+                              width="100%"
+                              height="100%"
+                              src={`https://www.youtube.com/embed/${new URLSearchParams(new URL(slide.textarea.videourl).search).get('v')}`}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              title="Embedded youtube"
+                                />)
+                          : (
+                            <video
+                              width="100%"
+                              height="100%"
+                              controls
+                              autoPlay={slide.textarea.autoPlay}
+                              muted={!!slide.textarea.autoPlay}
+                            >
+                              <source src={slide.textarea.videourl} type="video/mp4" />
+                              Your browser does not support the video tag.
+                            </video>
+                            )
+                        }
+                      </Box>
+                  )
+                  }
+                  <Box sx={{
+                    position: 'absolute',
+                    bottom: '10px',
+                    right: '10px',
+                  }}>
                     {slideIndex > 0 && (<Button onClick={goToPreviousSlide}><ArrowBackIosIcon /></Button>)}
                     {slideIndex < presentation.slides.length - 1 && (<Button onClick={goToNextSlide}><ArrowForwardIosIcon /></Button>)}
                   </Box>
@@ -274,7 +487,158 @@ function Presentation ({ token, setTokenfunction }) {
         <Box display="flex" flexDirection="row" flexWrap="wrap" gap={2} my={2}>
           <Button variant="contained" color="primary" onClick={createSlide}>Create slide</Button>
           <Button variant="contained" color="error" onClick={deleteSlide}>Delete Slide</Button>
+          <Button variant="contained" onClick={() => setOpenOption(true)}>Add Content</Button>
         </Box>
+        <Dialog open={openOption} onClose={() => setOpenOption(false)}>
+          <DialogContent>
+            <Typography>Select content type:</Typography>
+            <Dialog open={openOption} onClose={() => setOpenOption(false)}>
+              <DialogContent>
+                <Typography>Select content type:</Typography>
+                <RadioGroup value={contentType} onChange={handleContentChange}>
+                  <FormControlLabel value="text" control={<Radio />} label="Text" />
+                  <FormControlLabel value="image" control={<Radio />} label="Image" />
+                  <FormControlLabel value="video" control={<Radio />} label="Video" />
+                  <FormControlLabel value="code" control={<Radio />} label="Code" />
+                </RadioGroup>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setOpenOption(false)}>Cancel</Button>
+                <Button onClick={addContent}>Next</Button>
+              </DialogActions>
+            </Dialog>
+            <Dialog open={openTextBox} onClose={() => setOpenTextBox(false)}>
+              <DialogContent>
+                <TextField
+                  label="Text Content"
+                  multiline
+                  rows={4}
+                  value={textBoxContent}
+                  onChange={(e) => setTextBoxContent(e.target.value)}
+                  fullWidth
+                />
+                <TextField
+                  label="Font Size (em)"
+                  type="number"
+                  value={textBoxFontSize}
+                  onChange={(e) => setTextBoxFontSize(e.target.value)}
+                  fullWidth
+                />
+                <TextField
+                  label="Color (HEX)"
+                  type="text"
+                  value={textBoxColor}
+                  onChange={(e) => setTextBoxColor(e.target.value)}
+                  fullWidth
+                />
+                <Typography>Size:</Typography>
+                <TextField
+                  label="Width (%)"
+                  type="number"
+                  value={textBoxSize.width}
+                  onChange={(e) => setTextBoxSize({ ...textBoxSize, width: e.target.value })}
+                  fullWidth
+                />
+                <TextField
+                  label="Height (%)"
+                  type="number"
+                  value={textBoxSize.height}
+                  onChange={(e) => setTextBoxSize({ ...textBoxSize, height: e.target.value })}
+                  fullWidth
+                />
+                <TextField
+                  label="Layer"
+                  type="text"
+                  value={textBoxLayer}
+                  onChange={(e) => setTextBoxLayer(e.target.value)}
+                  fullWidth
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => { setOpenTextBox(false); setOpenOption(false); }}>Cancel</Button>
+                <Button onClick={createTextArea}>Add</Button>
+              </DialogActions>
+            </Dialog>
+            <Dialog open={openImageBox} onClose={() => setOpenImageBox(false)}>
+              <DialogContent>
+                <TextField
+                  label="Image URL or Base64"
+                  value={imageData.url}
+                  onChange={(e) => setImageData({ ...imageData, url: e.target.value })}
+                  fullWidth
+                />
+                <TextField
+                  label="Alt Description"
+                  value={imageData.alt}
+                  onChange={(e) => setImageData({ ...imageData, alt: e.target.value })}
+                  fullWidth
+                />
+                <TextField
+                  label="Width"
+                  type="number"
+                  value={imageData.width}
+                  onChange={(e) => setImageData({ ...imageData, width: e.target.value })}
+                  fullWidth
+                />
+                <TextField
+                  label="Height"
+                  type="number"
+                  value={imageData.height}
+                  onChange={(e) => setImageData({ ...imageData, height: e.target.value })}
+                  fullWidth
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => { setOpenImageBox(false); setOpenOption(false); }}>Cancel</Button>
+                <Button onClick={createTextArea}>Add</Button>
+              </DialogActions>
+            </Dialog>
+            <Dialog open={openVideoBox} onClose={() => setOpenVideoBox(false)}>
+              <DialogContent>
+                <TextField
+                  label="YouTube Video URL"
+                  value={videoData.url}
+                  onChange={(e) => setVideoData({ ...videoData, url: e.target.value })}
+                  fullWidth
+                />
+                <TextField
+                  label="Width"
+                  type="number"
+                  value={videoData.width}
+                  onChange={(e) => setVideoData({ ...videoData, width: e.target.value })}
+                  fullWidth
+                />
+                <TextField
+                  label="Height"
+                  type="number"
+                  value={videoData.height}
+                  onChange={(e) => setVideoData({ ...videoData, height: e.target.value })}
+                  fullWidth
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={videoData.autoplay}
+                      onChange={(e) => setVideoData({ ...videoData, autoplay: e.target.checked })}
+                    />
+                  }
+                  label="Auto-play"
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={ () => { setOpenVideoBox(false); setOpenOption(false); }}>Cancel</Button>
+                <Button onClick={createTextArea}>Add</Button>
+              </DialogActions>
+            </Dialog>
+            <Dialog open={openCodeBox} onClose={() => setOpenCodeBox(false)}>
+              <></>
+            </Dialog>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={cancelSlide}>Cancel</Button>
+            <Button onClick={saveSlide}>Save</Button>
+          </DialogActions>
+        </Dialog>
       </Paper>
       <Box display="flex" flexDirection="row" flexWrap="wrap" gap={2} my={2}>
         <Button variant="contained" color="primary" onClick={editTitle}>Edit title</Button>
@@ -289,7 +653,7 @@ function Presentation ({ token, setTokenfunction }) {
             value={slideName}
             onChange={e => setSlideName(e.target.value)}
           />
-          <Typography variant="h6">Slide Settings</Typography><br/>
+          <Typography variant="h6">Slide Settings</Typography><br />
           <TextField
             label="Font Size (em)"
             value={fontSize}
@@ -304,31 +668,6 @@ function Presentation ({ token, setTokenfunction }) {
             onChange={(e) => setColor(e.target.value)}
             type="text"
             size="small"
-          />
-           <TextField
-            label="Layer"
-            value={layerNumber}
-            onChange={(e) => setLayerNumber(e.target.value)}
-            type="number"
-            size="small"
-          />
-          <Typography gutterBottom>Width (%)</Typography>
-          <Slider
-            value={slideSize.width}
-            onChange={(e, newValue) => handleSizeChange('width', newValue)}
-            aria-labelledby="width-slider"
-            valueLabelDisplay="auto"
-            min={0}
-            max={100}
-          />
-          <Typography gutterBottom>Height (%)</Typography>
-          <Slider
-            value={slideSize.height}
-            onChange={(e, newValue) => handleSizeChange('height', newValue)}
-            aria-labelledby="height-slider"
-            valueLabelDisplay="auto"
-            min={0}
-            max={100}
           />
         </DialogContent>
         <DialogActions>
