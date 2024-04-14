@@ -22,7 +22,7 @@ function App () {
         <Route path="/register" element={<Register token={token} setTokenfunction={setTokenAbstract}/>} />
         <Route path="/" element={<Login token={token} setTokenfunction={setTokenAbstract}/>} />
         <Route path="/dashboard" element={<Dashboard token={token} setTokenfunction={setTokenAbstract}/>} />
-        <Route path="/presentation/:presentationId" element={<Presentation token={token} setTokenfunction={setTokenAbstract}/>} />
+        <Route path="/presentation/:presentationId/:slideId" element={<Presentation token={token} setTokenfunction={setTokenAbstract}/>} />
       </Routes>
     </BrowserRouter>
 

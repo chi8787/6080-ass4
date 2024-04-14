@@ -189,13 +189,17 @@ function Presentation ({ token, setTokenfunction }) {
 
   const goToNextSlide = () => {
     if (slideIndex < presentation.slides.length - 1) {
+      const newIndex = Math.min(slideIndex + 1, presentation.slides.length - 1);
       setSlideIndex(slideIndex + 1);
+      navigate(`/presentation/${presentationId}/${newIndex}`);
     }
   };
 
   const goToPreviousSlide = () => {
+    const newIndex = Math.max(slideIndex - 1, 0);
     if (slideIndex > 0) {
       setSlideIndex(slideIndex - 1);
+      navigate(`/presentation/${presentationId}/${newIndex}`);
     }
   };
 
@@ -528,24 +532,24 @@ function Presentation ({ token, setTokenfunction }) {
                       {slide.textarea?.videourl.includes('youtube.com') || slide.textarea?.videourl.includes('youtu.be')
                         ? (
                           <iframe
-                            width="100%"
-                            height="100%"
-                            src={`https://www.youtube.com/embed/${new URLSearchParams(new URL(slide.textarea.videourl).search).get('v')}`}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            title="Embedded youtube"
-                          />)
+                        width="100%"
+                        height="100%"
+                        src={`https://www.youtube.com/embed/${new URLSearchParams(new URL(slide.textarea.videourl).search).get('v')}` + `?autoplay=${slide.textarea.autoplay ? '1' : '0'}`}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        title="Embedded youtube"
+                      />)
                         : (
-                          <video
-                            width="100%"
-                            height="100%"
-                            controls
-                            autoPlay={slide.textarea.autoPlay}
-                            muted={!!slide.textarea.autoPlay}
-                          >
-                            <source src={slide.textarea.videourl} type="video/mp4" />
-                            Your browser does not support the video tag.
-                          </video>
+                        <video
+                          width="100%"
+                          height="100%"
+                          controls
+                          autoPlay={slide.textarea.autoPlay}
+                          muted={!!slide.textarea.autoPlay}
+                        >
+                          <source src={slide.textarea.videourl} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
                           )}
                     </Box>
                   )}
@@ -582,8 +586,8 @@ function Presentation ({ token, setTokenfunction }) {
                     bottom: '10px',
                     right: '10px',
                   }}>
-                    {slideIndex > 0 && (<Button onClick={goToPreviousSlide}><ArrowBackIosIcon /></Button>)}
-                    {slideIndex < presentation.slides.length - 1 && (<Button onClick={goToNextSlide}><ArrowForwardIosIcon /></Button>)}
+                    {slideIndex > 0 && (<Button style={{ position: 'relative', zIndex: 10 }} onClick={goToPreviousSlide}><ArrowBackIosIcon /></Button>)}
+                    {slideIndex < presentation.slides.length - 1 && (<Button style={{ position: 'relative', zIndex: 10 }} onClick={goToNextSlide}><ArrowForwardIosIcon /></Button>)}
                   </Box>
                   <Box sx={{
                     position: 'absolute',

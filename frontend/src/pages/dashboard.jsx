@@ -51,7 +51,7 @@ function Dashboard ({ token, setTokenfunction }) {
         const newPresentation = {
           id: newId,
           title: presentationName,
-          slides: [],
+          slides: [{ textarea: {} }],
         };
         const presentationList = [...fetchPresentations, newPresentation];
         const putDatta = {
@@ -77,7 +77,7 @@ function Dashboard ({ token, setTokenfunction }) {
   };
 
   const guidePresentation = (presentationId) => {
-    navigate(`/presentation/${presentationId}`);
+    navigate(`/presentation/${presentationId}/0`);
   };
 
   return (
