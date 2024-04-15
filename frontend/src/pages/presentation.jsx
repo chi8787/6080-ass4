@@ -258,7 +258,6 @@ function Presentation ({ token, setTokenfunction }) {
       const updatedPresentations = presentationList.filter(p => p.id !== presentation.id); // filter out the target presentation
       const existSlide = foundPresentation.slides;
       const foundSlide = existSlide.find((_, index) => index === slideIndex); // target slide
-      console.log('foundSlide:', foundSlide);
       const updatedSlide = foundPresentation.slides.filter((_, index) => index !== slideIndex); // filter out the target slide
       if (!presentationList) {
         presentationList = [];
@@ -316,7 +315,6 @@ function Presentation ({ token, setTokenfunction }) {
 
   const handleContentChange = (event) => {
     setContentType(event.target.value);
-    console.log('contentType:', contentType);
   };
 
   const addContent = () => {
@@ -381,7 +379,7 @@ function Presentation ({ token, setTokenfunction }) {
         codeFontSize: codeData.fontSize || foundSlideOption.codeFontSize || 'none',
         codeWidth: codeData.textareaWidth || foundSlideOption.codeWidth || 'none',
         codeHeight: codeData.textareaHeight || foundSlideOption.codeHeight || 'none',
-        fontFamily: slideOption.slidefontFamily || 'none',
+        fontFamily: slideOption.slidefontFamily || 'Arial',
         background: slideOption.slidebackground || 'white',
         background2: slideOption.slidebackground2 || 'none',
         direction: slideOption.direction || 'none',
@@ -409,6 +407,7 @@ function Presentation ({ token, setTokenfunction }) {
           Authorization: token,
         }
       });
+      console.log('fontFamily:', slideOption.slidefontFamily);
       navigate('/dashboard');
     } catch (error) {
       console.error('Error in deletePresentation:', error);

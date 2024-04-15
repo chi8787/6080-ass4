@@ -23,6 +23,13 @@ function Login (props) {
       alert(error.response.data.error);
     }
   }
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      login();
+    }
+  }
+
   return (
     <Container maxWidth="sm" style={{ minHeight: '100vh' }}>
       <Stack
@@ -53,6 +60,7 @@ function Login (props) {
                 onChange={e => setPassword(e.target.value)}
                 fullWidth
                 size="medium"
+                onKeyDown={handleKeyDown}
               />
               <Button variant="contained" color="primary" onClick={login} fullWidth size="large">
                 Login
