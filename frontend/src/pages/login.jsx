@@ -1,34 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Stack, Card, CardContent, Typography, TextField, Button, Container } from '@mui/material';
+import { Stack, Card, CardContent, Typography, TextField, Button, Container, CircularProgress } from '@mui/material';
 
-function Login (props) {
+function Login ({ setTokenfunction }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  function gotoregister () {
-    navigate('/register');
-  }
+  useEffect(() => {
+    const handleEnter = (event) => {
+      if (event.key === 'Enter') {
+        login();
+      }
+    };
+    document.addEventListener('keydown', handleEnter);
+    return () => document.removeEventListener('keydown', handleEnter);
+  }, [email, password]);
 
   const login = async () => {
+    setLoading(true);
+    setError('');
     try {
-      const response = await axios.post('http://localhost:5005/admin/auth/login', {
-        email, password
-      });
-      props.setTokenfunction(response.data.token);
+      const response = await axios.post('http://localhost:5005/admin/auth/login', { email, password });
+      setTokenfunction(response.data.token);
       navigate('/dashboard');
     } catch (error) {
-      alert(error.response.data.error);
+      setError(error.response.data.error || 'Failed to login');
+      setLoading(false);
     }
-  }
-
-  const handleKeyDown = (event) => {
-    if (event.key === 'Enter') {
-      login();
-    }
-  }
+  };
 
   return (
     <Container maxWidth="sm" style={{ minHeight: '100vh' }}>
@@ -39,33 +42,50 @@ function Login (props) {
         alignItems="center"
         style={{ minHeight: '100vh' }}
       >
-        <Card style={{ width: '100%', padding: '20px', boxSizing: 'border-box' }}>
+        <Card style={{ width: '100%', padding: '20px' }}>
           <CardContent>
             <Typography variant="h4" component="h2" gutterBottom>
               Login
             </Typography>
             <Stack spacing={2}>
               <TextField
-                label="Email address"
-                type="text"
+                label="Email Address"
+                type="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 fullWidth
-                size="medium"
+                error={!!error}
+                helperText={error}
+                autoFocus
               />
               <TextField
                 label="Password"
                 type="password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 fullWidth
-                size="medium"
-                onKeyDown={handleKeyDown}
+                error={!!error}
+                helperText={error}
               />
-              <Button variant="contained" color="primary" onClick={login} fullWidth size="large">
-                Login
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={login}
+                fullWidth
+                size="large"
+                disabled={loading}
+                aria-label="login submit"
+              >
+                {loading ? <CircularProgress size={24} /> : 'Login'}
               </Button>
-              <Button variant="contained" color="secondary" onClick={gotoregister} fullWidth size="large">
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => navigate('/register')}
+                fullWidth
+                size="large"
+                aria-label="go to register page"
+              >
                 Register
               </Button>
             </Stack>

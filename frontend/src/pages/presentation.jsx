@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Logout from '../components/logoutbtn';
-import { Button, Dialog, DialogContent, DialogActions, TextField, Typography, Box, Grid, Paper, RadioGroup, FormControlLabel, Radio, Checkbox, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { Button, Dialog, DialogContent, DialogActions, TextField, Typography, Box, Grid, Paper, RadioGroup, FormControlLabel, Radio, Checkbox, MenuItem, Select, DialogTitle, FormControl, InputLabel } from '@mui/material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
@@ -421,7 +421,7 @@ function Presentation ({ token, setTokenfunction }) {
       <Typography variant="h3" gutterBottom>
         Slide {presentationId}
       </Typography>
-      <Button variant="outlined" onClick={back2dashboard}>Back to dashboard</Button>
+      <Button variant="outlined" aria-label="back to dashboard" onClick={back2dashboard}>Back to dashboard</Button>
       <Paper elevation={3} sx={{ padding: 2, margin: '20px 0' }}>
         <Typography variant="h4" gutterBottom>{presentation.title}</Typography>
         {presentation.slides.length > 0 && (
@@ -585,8 +585,8 @@ function Presentation ({ token, setTokenfunction }) {
                     bottom: '10px',
                     right: '10px',
                   }}>
-                    {slideIndex > 0 && (<Button style={{ position: 'relative', zIndex: 10 }} onClick={goToPreviousSlide}><ArrowBackIosIcon /></Button>)}
-                    {slideIndex < presentation.slides.length - 1 && (<Button style={{ position: 'relative', zIndex: 10 }} onClick={goToNextSlide}><ArrowForwardIosIcon /></Button>)}
+                    {slideIndex > 0 && (<Button aria-label="nextslide" style={{ position: 'relative', zIndex: 10 }} onClick={goToPreviousSlide}><ArrowBackIosIcon /></Button>)}
+                    {slideIndex < presentation.slides.length - 1 && (<Button aria-label="previous slide" style={{ position: 'relative', zIndex: 10 }} onClick={goToNextSlide}><ArrowForwardIosIcon /></Button>)}
                   </Box>
                   <Box sx={{
                     position: 'absolute',
@@ -607,11 +607,11 @@ function Presentation ({ token, setTokenfunction }) {
           </Grid>
         )}
         <Box display="flex" flexDirection="row" flexWrap="wrap" gap={2} my={2}>
-          <Button variant="contained" color="primary" onClick={createSlide}>Create slide</Button>
-          <Button variant="contained" color="error" onClick={deleteSlide}>Delete Slide</Button>
-          <Button variant="contained" color="info" onClick={() => setOpenOption(true)}>Add Content</Button>
+          <Button aria-label="create a new slide" variant="contained" color="primary" onClick={createSlide}>Create slide</Button>
+          <Button aria-label="delete the current slide" variant="contained" color="error" onClick={deleteSlide}>Delete Slide</Button>
+          <Button aria-label="add component pop four choices" variant="contained" color="info" onClick={() => setOpenOption(true)}>Add Content</Button>
           {presentation.slides[slideIndex]?.textarea && (
-            <Button variant="contained" color="secondary" onClick={() => setOpenSlideEditor(true)}>Edit Component</Button>
+            <Button aria-label="edit the component" variant="contained" color="secondary" onClick={() => setOpenSlideEditor(true)}>Edit Content</Button>
           )}
         </Box>
         <Dialog open={openslideEditor} onClose={() => setOpenSlideEditor(false)}>
@@ -661,16 +661,16 @@ function Presentation ({ token, setTokenfunction }) {
             </RadioGroup>
           </DialogContent>
           <DialogActions>
-            <Button onClick={editSlide}>Save</Button>
-            <Button onClick={() => setOpenSlideEditor(false)}>Cancel</Button>
+            <Button aria-label="save the component" onClick={editSlide}>Save</Button>
+            <Button aria-label="cancel create component" onClick={() => setOpenSlideEditor(false)}>Cancel</Button>
           </DialogActions>
         </Dialog>
         <Dialog open={openOption} onClose={() => setOpenOption(false)}>
           <DialogContent>
             <Typography>Select content type:</Typography>
-            <Dialog open={openOption} onClose={() => setOpenOption(false)}>
+            <Dialog open={openOption} onClose={() => setOpenOption(false)} aria-labelledby="content-type">
+              <DialogTitle id="content-type">Select Content Type</DialogTitle>
               <DialogContent>
-                <Typography>Select content type:</Typography>
                 <RadioGroup value={contentType} onChange={handleContentChange}>
                   <FormControlLabel value="text" control={<Radio />} label="Text" />
                   <FormControlLabel value="image" control={<Radio />} label="Image" />
@@ -679,12 +679,19 @@ function Presentation ({ token, setTokenfunction }) {
                 </RadioGroup>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setOpenOption(false)}>Cancel</Button>
-                <Button onClick={addContent}>Next</Button>
+                <Button aria-label="cancel the choosing the type" onClick={() => setOpenOption(false)}>Cancel</Button>
+                <Button aria-label="select the type and go to next modal" onClick={addContent}>Next</Button>
               </DialogActions>
             </Dialog>
-            <Dialog open={openTextBox} onClose={() => setOpenTextBox(false)}>
+            <Dialog
+              open={openTextBox}
+              onClose={() => setOpenTextBox(false)}
+              aria-labelledby="edit-content-dialog"
+              aria-describedby="edit-content-parameters"
+            >
+              <DialogTitle id="edit-content-dialog">Edit Text Content</DialogTitle>
               <DialogContent>
+                <Typography id="edit-content-parameters">Enter the text content and adjust settings.</Typography>
                 <TextField
                   label="Text Content"
                   multiline
@@ -731,8 +738,8 @@ function Presentation ({ token, setTokenfunction }) {
                 />
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => { setOpenTextBox(false); setOpenOption(false); }}>Cancel</Button>
-                <Button onClick={createTextArea}>Add</Button>
+                <Button aria-label="cancel add text content" onClick={() => { setOpenTextBox(false); setOpenOption(false); }}>Cancel</Button>
+                <Button aria-label="add text content" onClick={createTextArea}>Add</Button>
               </DialogActions>
             </Dialog>
             <Dialog open={openImageBox} onClose={() => setOpenImageBox(false)}>
@@ -765,8 +772,8 @@ function Presentation ({ token, setTokenfunction }) {
                 />
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => { setOpenImageBox(false); setOpenOption(false); }}>Cancel</Button>
-                <Button onClick={createTextArea}>Add</Button>
+                <Button aria-label="cancel add img" onClick={() => { setOpenImageBox(false); setOpenOption(false); }}>Cancel</Button>
+                <Button aria-label="add img content" onClick={createTextArea}>Add</Button>
               </DialogActions>
             </Dialog>
             <Dialog open={openVideoBox} onClose={() => setOpenVideoBox(false)}>
@@ -802,8 +809,8 @@ function Presentation ({ token, setTokenfunction }) {
                 />
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => { setOpenVideoBox(false); setOpenOption(false); }}>Cancel</Button>
-                <Button onClick={createTextArea}>Add</Button>
+                <Button aria-label="cancel add video" onClick={() => { setOpenVideoBox(false); setOpenOption(false); }}>Cancel</Button>
+                <Button aria-label="add video content" onClick={createTextArea}>Add</Button>
               </DialogActions>
             </Dialog>
             <Dialog open={openCodeBox} onClose={() => setOpenCodeBox(false)}>
@@ -858,8 +865,8 @@ function Presentation ({ token, setTokenfunction }) {
                 </Grid>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => { setOpenCodeBox(false); setOpenOption(false); }}>Cancel</Button>
-                <Button onClick={createTextArea} color="primary">Add</Button>
+                <Button aria-label="cancel add code" onClick={() => { setOpenCodeBox(false); setOpenOption(false); }}>Cancel</Button>
+                <Button aria-label="add code content" onClick={createTextArea} color="primary">Add</Button>
               </DialogActions>
             </Dialog>
           </DialogContent>
@@ -870,8 +877,8 @@ function Presentation ({ token, setTokenfunction }) {
         </Dialog>
       </Paper>
       <Box display="flex" flexDirection="row" flexWrap="wrap" gap={2} my={2}>
-        <Button variant="contained" color="primary" onClick={editTitle}>Edit title</Button>
-        <Button variant="contained" color="error" onClick={deletePresentation}>Delete presentation</Button>
+        <Button aria-label="edit presentation title" variant="contained" color="primary" onClick={editTitle}>Edit title</Button>
+        <Button aria-label="delete presentation" variant="contained" color="error" onClick={deletePresentation}>Delete presentation</Button>
       </Box>
       <Dialog open={openSlide} onClose={cancelSlide}>
         <DialogContent>
